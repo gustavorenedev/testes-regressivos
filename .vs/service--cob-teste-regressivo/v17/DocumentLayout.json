@@ -1,0 +1,162 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\reporting\\pdfreportgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\reporting\\pdfreportgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\configuration\\pipelinefileconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\configuration\\pipelinefileconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\cob.regressivo.cli.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\cob.regressivo.cli.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\core\\pipelineorchestrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\core\\pipelineorchestrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\configuration\\pipelineconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\configuration\\pipelineconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\pipelines\\dog-api.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\pipelines\\dog-api.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|c:\\users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.cli\\pipelines\\pokeapi.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}|cob.regressivo.CLI\\cob.regressivo.CLI.csproj|solutionrelative:cob.regressivo.cli\\pipelines\\pokeapi.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 220,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "cob.regressivo.CLI",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\cob.regressivo.CLI.csproj",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\cob.regressivo.CLI.csproj",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\cob.regressivo.CLI.csproj",
+              "RelativeToolTip": "cob.regressivo.CLI\\cob.regressivo.CLI.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-04-19T04:13:11.546Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PdfReportGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Reporting\\PdfReportGenerator.cs",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\Reporting\\PdfReportGenerator.cs",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Reporting\\PdfReportGenerator.cs",
+              "RelativeToolTip": "cob.regressivo.CLI\\Reporting\\PdfReportGenerator.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAcwGUAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-19T04:02:15.988Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "pokeapi.json",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\pipelines\\pokeapi.json",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\pipelines\\pokeapi.json",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\pipelines\\pokeapi.json",
+              "RelativeToolTip": "cob.regressivo.CLI\\pipelines\\pokeapi.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-19T03:39:12.784Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Program.cs",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\Program.cs",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Program.cs",
+              "RelativeToolTip": "cob.regressivo.CLI\\Program.cs",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAAEAAAABhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-19T03:36:05.262Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PipelineOrchestrator.cs",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Core\\PipelineOrchestrator.cs",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\Core\\PipelineOrchestrator.cs",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Core\\PipelineOrchestrator.cs",
+              "RelativeToolTip": "cob.regressivo.CLI\\Core\\PipelineOrchestrator.cs",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAvwGcAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-19T03:37:07.371Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 180,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "dog-api.json",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\pipelines\\dog-api.json",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\pipelines\\dog-api.json",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\pipelines\\dog-api.json",
+              "RelativeToolTip": "cob.regressivo.CLI\\pipelines\\dog-api.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-19T03:39:14.102Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PipelineFileConfig.cs",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Configuration\\PipelineFileConfig.cs",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\Configuration\\PipelineFileConfig.cs",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Configuration\\PipelineFileConfig.cs",
+              "RelativeToolTip": "cob.regressivo.CLI\\Configuration\\PipelineFileConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-19T03:48:53.301Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PipelineConfig.cs",
+              "DocumentMoniker": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Configuration\\PipelineConfig.cs",
+              "RelativeDocumentMoniker": "cob.regressivo.CLI\\Configuration\\PipelineConfig.cs",
+              "ToolTip": "C:\\Users\\reneg\\source\\repos\\service--cob-teste-regressivo\\src\\cob.regressivo.CLI\\Configuration\\PipelineConfig.cs",
+              "RelativeToolTip": "cob.regressivo.CLI\\Configuration\\PipelineConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAUAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-19T03:49:18.306Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

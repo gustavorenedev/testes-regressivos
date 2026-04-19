@@ -1,0 +1,157 @@
+{
+  "version": "1.1",
+  "globals": {
+    "baseUrl": "https://pokeapi.co/api/v2",
+    "timeoutSeconds": 30,
+    "defaultHeaders": {
+      "Accept": "application/json",
+      "X-Correlation-ID": "{{correlationId}}"
+    },
+    "retryPolicy": {
+      "maxAttempts": 3,
+      "backoffSeconds": [ 1, 2, 5 ],
+      "retryOnStatusCodes": [ 429, 500, 502, 503 ]
+    }
+  },
+  "variables": {
+    "pokemonAlvo": "pikachu",
+    "pokemonComparacao": "charizard"
+  },
+  "pipelines": [
+    {
+      "id": "pokedex_chain",
+      "name": "Pokedex - Cadeia de Consultas",
+      "description": "Busca Pokemon, usa a URL da especie extraida para a proxima chamada e compara com outro Pokemon — encadeamento real entre steps",
+      "tags": [ "pokemon", "demo", "public-api", "encadeamento" ],
+      "onError": "continue",
+      "steps": [
+        {
+          "id": "buscar_pokemon",
+          "name": "Buscar Dados do Pokemon Alvo (Pikachu)",
+          "dependsOn": [],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/pokemon/{{variables.pokemonAlvo}}",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "pokemonId": "$.id",
+            "pokemonNome": "$.name",
+            "experienciaBase": "$.base_experience",
+            "pesoHg": "$.weight",
+            "alturaHm": "$.height",
+            "speciesUrl": "$.species.url",
+            "tipoPrincipalUrl": "$.types[0].type.url",
+            "tipoPrincipalNome": "$.types[0].type.name"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.name", "operator": "notEmpty" },
+            { "path": "$.id", "operator": "notNull" }
+          ]
+        },
+        {
+          "id": "buscar_especie",
+          "name": "Buscar Especie (URL extraida do step anterior)",
+          "dependsOn": [ "buscar_pokemon" ],
+          "endpoint": {
+            "url": "{{steps.buscar_pokemon.speciesUrl}}",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "taxaCaptura": "$.capture_rate",
+            "felicidadeBase": "$.base_happiness",
+            "habitat": "$.habitat.name",
+            "lendario": "$.is_legendary",
+            "mitico": "$.is_mythical",
+            "geracaoUrl": "$.generation.url"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.name", "operator": "notEmpty" },
+            { "path": "$.capture_rate", "operator": "notNull" }
+          ]
+        },
+        {
+          "id": "buscar_tipo_principal",
+          "name": "Buscar Detalhes do Tipo Principal (URL extraida)",
+          "dependsOn": [ "buscar_pokemon" ],
+          "endpoint": {
+            "url": "{{steps.buscar_pokemon.tipoPrincipalUrl}}",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "nomeTipo": "$.name",
+            "primeiroPokemonDoTipo": "$.pokemon[0].pokemon.name",
+            "totalDanosDuplosCom": "$.damage_relations.double_damage_to[0].name"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.name", "operator": "notEmpty" }
+          ]
+        },
+        {
+          "id": "buscar_pokemon_comparacao",
+          "name": "Buscar Pokemon para Comparacao (Charizard)",
+          "dependsOn": [],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/pokemon/{{variables.pokemonComparacao}}",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "charizardNome": "$.name",
+            "charizardExp": "$.base_experience",
+            "charizardPeso": "$.weight",
+            "charizardAltura": "$.height",
+            "charizardTipo": "$.types[0].type.name",
+            "charizardSpeciesUrl": "$.species.url"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.name", "operator": "notEmpty" }
+          ]
+        },
+        {
+          "id": "buscar_especie_charizard",
+          "name": "Buscar Especie do Charizard (URL encadeada)",
+          "dependsOn": [ "buscar_pokemon_comparacao" ],
+          "endpoint": {
+            "url": "{{steps.buscar_pokemon_comparacao.charizardSpeciesUrl}}",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "charizardHabitat": "$.habitat.name",
+            "charizardLendario": "$.is_legendary",
+            "charizardTaxaCaptura": "$.capture_rate"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.name", "operator": "notEmpty" }
+          ]
+        }
+      ],
+      "output": {
+        "pokemon": "{{steps.buscar_pokemon.pokemonNome}}",
+        "habitat": "{{steps.buscar_especie.habitat}}",
+        "tipoPrincipal": "{{steps.buscar_pokemon.tipoPrincipalNome}}",
+        "comparacao": "{{steps.buscar_pokemon_comparacao.charizardNome}}"
+      },
+      "report": {
+        "title": "Relatorio - PokeAPI Cadeia de Consultas",
+        "outputPath": "C:\\Users\\reneg\\pdf\\pokeapi-{{correlationId}}.pdf",
+        "includeRequestBody": false,
+        "includeResponseBody": true,
+        "sensitiveFields": []
+      }
+    }
+  ]
+}

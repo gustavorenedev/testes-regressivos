@@ -1,0 +1,105 @@
+{
+  "$schema": "../pipeline-schema.json",
+  "version": "1.1",
+  "globals": {
+    "baseUrl": "https://jsonplaceholder.typicode.com",
+    "timeoutSeconds": 30,
+    "defaultHeaders": {
+      "X-Correlation-ID": "{{correlationId}}"
+    },
+    "retryPolicy": {
+      "maxAttempts": 3,
+      "backoffSeconds": [ 1, 2, 5 ],
+      "retryOnStatusCodes": [ 429, 500, 502, 503 ]
+    }
+  },
+  "variables": {
+    "userId": "1"
+  },
+  "pipelines": [
+    {
+      "id": "buscar_usuario_e_posts",
+      "name": "Buscar Usuário e Posts",
+      "description": "Busca dados de um usuário e lista seus posts (demo JSONPlaceholder)",
+      "tags": [ "demo", "jsonplaceholder" ],
+      "onError": "continue",
+      "steps": [
+        {
+          "id": "buscar_usuario",
+          "name": "Buscar Usuário",
+          "dependsOn": [],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/users/{{variables.userId}}",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "userName": "$.name",
+            "userEmail": "$.email",
+            "userId": "$.id"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.name", "operator": "notEmpty" }
+          ]
+        },
+        {
+          "id": "buscar_posts",
+          "name": "Buscar Posts do Usuário",
+          "dependsOn": [ "buscar_usuario" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/posts",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {
+              "userId": "{{steps.buscar_usuario.userId}}"
+            }
+          },
+          "extract": {},
+          "assertions": [
+            { "statusCode": 200 }
+          ]
+        },
+        {
+          "id": "criar_post",
+          "name": "Criar Novo Post",
+          "dependsOn": [ "buscar_usuario" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/posts",
+            "method": "POST",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "type": "json",
+              "content": {
+                "title": "Post criado por {{steps.buscar_usuario.userName}}",
+                "body": "Conteudo gerado automaticamente pelo pipeline",
+                "userId": "{{steps.buscar_usuario.userId}}"
+              }
+            }
+          },
+          "extract": {
+            "postId": "$.id"
+          },
+          "assertions": [
+            { "statusCode": 201 },
+            { "path": "$.id", "operator": "notNull" }
+          ]
+        }
+      ],
+      "output": {
+        "usuario": "{{steps.buscar_usuario.userName}}",
+        "novoPostId": "{{steps.criar_post.postId}}"
+      },
+      "report": {
+        "title": "Relatorio - Buscar Usuario e Posts",
+        "outputPath": "C:\\Users\\reneg\\pdf\\usuario-posts-{{correlationId}}.pdf",
+        "includeRequestBody": true,
+        "includeResponseBody": true,
+        "sensitiveFields": [ "Authorization", "access_token" ]
+      }
+    }
+  ]
+}

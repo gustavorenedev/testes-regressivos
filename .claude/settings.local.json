@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet add *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet run *)",
+      "Bash(curl -s \"https://pokeapi.co/api/v2/pokemon/pikachu\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Nome:', d['name'], '| ID:', d['id'], '| Species URL:', d['species']['url'], '| Tipo:', d['types'][0]['type']['name'], '| Tipo URL:', d['types'][0]['type']['url']\\)\")",
+      "Bash(powershell.exe -Command 'Add-Type -AssemblyName System.Web; $d = [System.Web.Script.Serialization.JavaScriptSerializer]::new\\(\\); $in = $input | Out-String; $o = $d.DeserializeObject\\($in\\); Write-Host '\\\\''Nome:'\\\\'' $o.name '\\\\''ID:'\\\\'' $o.id '\\\\''SpeciesURL:'\\\\'' $o.species.url '\\\\''Tipo:'\\\\'' $o.types[0].type.name')",
+      "Bash(powershell.exe -Command '$in=$input|Out-String; $o=$in|ConvertFrom-Json; Write-Host '\\\\''Nome:'\\\\'' $o.name '\\\\''| ID:'\\\\'' $o.id '\\\\''| SpeciesURL:'\\\\'' $o.species.url '\\\\''| Tipo:'\\\\'' $o.types[0].type.name '\\\\''| TipoURL:'\\\\'' $o.types[0].type.url')",
+      "Bash(curl -s \"https://pokeapi.co/api/v2/pokemon-species/25/\")",
+      "Bash(powershell.exe -Command '$in=$input|Out-String; $o=$in|ConvertFrom-Json; Write-Host '\\\\''Habitat:'\\\\'' $o.habitat.name '\\\\''| Capture rate:'\\\\'' $o.capture_rate '\\\\''| Lendario:'\\\\'' $o.is_legendary '\\\\''| Felicidade:'\\\\'' $o.base_happiness')",
+      "Bash(curl -s \"https://dog.ceo/api/breeds/list/all\")",
+      "Bash(powershell.exe -Command '$in=$input|Out-String; $o=$in|ConvertFrom-Json; Write-Host '\\\\''Status:'\\\\'' $o.status '\\\\''| Bulldog subs:'\\\\'' \\($o.message.bulldog -join '\\\\'', '\\\\''\\)')",
+      "Bash(curl -s \"https://dog.ceo/api/breed/labrador/images/random\")",
+      "Bash(powershell.exe -Command '$in=$input|Out-String; $o=$in|ConvertFrom-Json; Write-Host '\\\\''Imagem:'\\\\'' $o.message')",
+      "Read(//c/Users/reneg/source/repos/service--cob-teste-regressivo/**)"
+    ]
+  }
+}

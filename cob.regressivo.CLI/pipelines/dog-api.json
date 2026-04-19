@@ -1,0 +1,135 @@
+{
+  "version": "1.1",
+  "globals": {
+    "baseUrl": "https://dog.ceo/api",
+    "timeoutSeconds": 30,
+    "defaultHeaders": {
+      "Accept": "application/json",
+      "X-Correlation-ID": "{{correlationId}}"
+    },
+    "retryPolicy": {
+      "maxAttempts": 3,
+      "backoffSeconds": [ 1, 2, 5 ],
+      "retryOnStatusCodes": [ 429, 500, 502, 503 ]
+    }
+  },
+  "variables": {
+    "racaFavorita": "labrador",
+    "quantidadeImagens": "4"
+  },
+  "pipelines": [
+    {
+      "id": "dog_api_explorer",
+      "name": "Dog API - Exploração de Raças",
+      "description": "Lista raças disponíveis, busca imagens e sub-raças usando a Dog CEO API pública",
+      "tags": [ "dog", "demo", "public-api" ],
+      "onError": "continue",
+      "steps": [
+        {
+          "id": "listar_racas",
+          "name": "Listar Todas as Raças Disponíveis",
+          "dependsOn": [],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/breeds/list/all",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "apiStatus": "$.status"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.status", "operator": "equals", "value": "success" }
+          ]
+        },
+        {
+          "id": "imagem_raca_favorita",
+          "name": "Imagem Aleatória da Raça Favorita (Labrador)",
+          "dependsOn": [ "listar_racas" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/breed/{{variables.racaFavorita}}/images/random",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "imagemUrl": "$.message",
+            "statusImagem": "$.status"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.status", "operator": "equals", "value": "success" },
+            { "path": "$.message", "operator": "notEmpty" }
+          ]
+        },
+        {
+          "id": "multiplas_imagens_husky",
+          "name": "Múltiplas Imagens de Husky",
+          "dependsOn": [ "listar_racas" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/breed/husky/images/random/{{variables.quantidadeImagens}}",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "statusHusky": "$.status"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.status", "operator": "equals", "value": "success" }
+          ]
+        },
+        {
+          "id": "sub_racas_bulldog",
+          "name": "Sub-raças do Bulldog",
+          "dependsOn": [ "listar_racas" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/breed/bulldog/list",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "statusBulldog": "$.status"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.status", "operator": "equals", "value": "success" }
+          ]
+        },
+        {
+          "id": "imagem_golden",
+          "name": "Imagem Aleatória de Golden Retriever",
+          "dependsOn": [ "imagem_raca_favorita" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/breed/golden/images/random",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {}
+          },
+          "extract": {
+            "imagemGolden": "$.message",
+            "statusGolden": "$.status"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.message", "operator": "notEmpty" }
+          ]
+        }
+      ],
+      "output": {
+        "imagemLabrador": "{{steps.imagem_raca_favorita.imagemUrl}}",
+        "imagemGolden": "{{steps.imagem_golden.imagemGolden}}"
+      },
+      "report": {
+        "title": "Relatorio - Dog CEO API",
+        "outputPath": "C:\\Users\\reneg\\pdf\\dog-api-{{correlationId}}.pdf",
+        "includeRequestBody": false,
+        "includeResponseBody": true,
+        "sensitiveFields": []
+      }
+    }
+  ]
+}
