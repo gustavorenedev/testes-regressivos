@@ -1,0 +1,138 @@
+@page "/pipelines"
+@rendermode InteractiveServer
+@using MediatR
+@using Cob.Regressivo.Core.Configuration
+@using Cob.Regressivo.Core.Engine
+@using Cob.Regressivo.Core.Reporting
+@using Cob.Regressivo.Web.Features.PipelineRunner.Application.CarregarPipelines
+@using Microsoft.Extensions.Options
+@inject IMediator Mediator
+@inject PipelineOrchestrator Orchestrator
+@inject IOptions<PipelineRunnerOptions> Options
+@inject IJSRuntime JS
+
+<PageTitle>Pipeline Runner</PageTitle>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+
+            <h3 class="mb-1">Pipeline Runner</h3>
+            <p class="text-muted mb-4">Executa pipelines HTTP com retry, assertions e geração de PDF.</p>
+
+            @if (_loading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Carregando pipelines...</p>
+                </div>
+            }
+            else if (_pipelines.Count == 0)
+            {
+                <div class="alert alert-warning">
+                    Nenhum pipeline encontrado em: <code>@ResolvedPipelinesDir</code>
+                </div>
+            }
+            else if (_view == View.SelectPipeline)
+            {
+                <PipelineTable Pipelines="_pipelines" OnExecutar="HandleExecutar" />
+            }
+            else if (_view == View.Executing)
+            {
+                <ExecutionLog PipelineName="@_pipeline!.Name" LogLines="_logLines" />
+            }
+            else if (_view == View.ViewResult)
+            {
+                <PipelineResult
+                    Records="_records!"
+                    Pipeline="_pipeline!"
+                    CorrelationId="_correlationId!"
+                    OnVoltar="Reiniciar"
+                    OnBaixarPdf="HandleBaixarPdf"
+                    Baixando="_baixando" />
+            }
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private enum View { SelectPipeline, Executing, ViewResult }
+
+    private List<PipelineEntry> _pipelines = [];
+    private View _view = View.SelectPipeline;
+    private bool _loading = true;
+    private bool _baixando;
+
+    private PipelineConfig?     _pipeline;
+    private PipelineFileConfig? _fileConfig;
+    private List<string>        _logLines     = [];
+    private List<ExecutionRecord>? _records;
+    private string?             _correlationId;
+
+    private string ResolvedPipelinesDir => ResolvePath(Options.Value.PipelinesDirectory);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _pipelines = await Mediator.Send(new CarregarPipelinesQuery());
+        _loading   = false;
+    }
+
+    private async Task HandleExecutar(PipelineEntry entry)
+    {
+        _pipeline   = entry.Pipeline;
+        _fileConfig = entry.FileConfig;
+        _logLines   = [];
+        _records    = null;
+        _view       = View.Executing;
+        StateHasChanged();
+
+        var (records, correlationId) = await Orchestrator.ExecuteAsync(
+            entry.FileConfig,
+            entry.Pipeline,
+            line => { _logLines.Add(line); InvokeAsync(StateHasChanged); });
+
+        _records       = records;
+        _correlationId = correlationId;
+        _view          = View.ViewResult;
+        StateHasChanged();
+    }
+
+    private async Task HandleBaixarPdf()
+    {
+        if (_records is null || _pipeline is null) return;
+        _baixando = true;
+        StateHasChanged();
+
+        try
+        {
+            var assetsDir = ResolvePath(Options.Value.AssetsDirectory);
+            var pdfDir    = Options.Value.PdfOutputDirectory;
+            var fileName  = $"report-{_correlationId}-{DateTime.Now:yyyyMMddHHmmss}.pdf";
+
+            var bytes = PdfReportGenerator.Generate(_records, _pipeline, assetsDir);
+
+            Directory.CreateDirectory(pdfDir);
+            await File.WriteAllBytesAsync(Path.Combine(pdfDir, fileName), bytes);
+            await JS.InvokeVoidAsync("downloadFile", fileName, "application/pdf", Convert.ToBase64String(bytes));
+        }
+        finally
+        {
+            _baixando = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Reiniciar()
+    {
+        _view          = View.SelectPipeline;
+        _pipeline      = null;
+        _fileConfig    = null;
+        _records       = null;
+        _correlationId = null;
+        _logLines      = [];
+    }
+
+    private static string ResolvePath(string path) =>
+        Path.IsPathRooted(path) ? path : Path.Combine(AppContext.BaseDirectory, path);
+}

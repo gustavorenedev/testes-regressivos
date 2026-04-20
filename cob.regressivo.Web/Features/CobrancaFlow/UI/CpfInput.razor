@@ -1,0 +1,78 @@
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Consulta de Contratos</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted mb-4">Informe o CPF para consultar os contratos associados.</p>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">CPF</label>
+            <input class="form-control form-control-lg"
+                   placeholder="000.000.000-00"
+                   maxlength="14"
+                   value="@_cpfFormatado"
+                   @oninput="FormatarCpf"
+                   @onkeydown="@(async e => { if (e.Key == "Enter") await Submeter(); })" />
+            @if (_erro != null)
+            {
+                <div class="text-danger small mt-1">@_erro</div>
+            }
+        </div>
+
+        <div class="d-grid">
+            <button class="btn btn-primary btn-lg" @onclick="Submeter" disabled="@IsLoading">
+                @if (IsLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <span>Consultando...</span>
+                }
+                else
+                {
+                    <span>Consultar Contratos</span>
+                }
+            </button>
+        </div>
+
+        <div class="mt-3 p-2 bg-light rounded small text-muted">
+            <strong>CPFs de teste:</strong><br />
+            123.456.789-09 — 3 contratos em atraso/vencidos<br />
+            987.654.321-00 — 2 contratos (1 ativo, 1 em atraso)
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<string> OnCpfSubmitted { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+
+    private string _cpfFormatado = string.Empty;
+    private string? _erro;
+
+    private void FormatarCpf(ChangeEventArgs e)
+    {
+        var digitos = new string((e.Value?.ToString() ?? "").Where(char.IsDigit).ToArray());
+        if (digitos.Length > 11) digitos = digitos[..11];
+
+        _cpfFormatado = digitos.Length switch
+        {
+            > 9 => $"{digitos[..3]}.{digitos[3..6]}.{digitos[6..9]}-{digitos[9..]}",
+            > 6 => $"{digitos[..3]}.{digitos[3..6]}.{digitos[6..]}",
+            > 3 => $"{digitos[..3]}.{digitos[3..]}",
+            _   => digitos
+        };
+    }
+
+    private async Task Submeter()
+    {
+        _erro = null;
+        var digitos = new string(_cpfFormatado.Where(char.IsDigit).ToArray());
+
+        if (digitos.Length != 11)
+        {
+            _erro = "CPF deve conter 11 dígitos.";
+            return;
+        }
+
+        await OnCpfSubmitted.InvokeAsync(digitos);
+    }
+}

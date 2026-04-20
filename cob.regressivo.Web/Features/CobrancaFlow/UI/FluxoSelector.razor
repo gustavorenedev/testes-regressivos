@@ -1,0 +1,66 @@
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Escolha o Tipo de Negociação</h5>
+    </div>
+    <div class="card-body">
+
+        <div class="alert alert-light border mb-4 py-2">
+            <strong>@ContratosSelecionados.Count</strong> contrato(s) selecionado(s) —
+            Total: <strong>@ContratosSelecionados.Sum(c => c.ValorTotal).ToString("C")</strong>
+        </div>
+
+        <div class="row g-3">
+            @foreach (var opcao in _opcoes)
+            {
+                var ativo = _fluxo == opcao.Tipo;
+                <div class="col-md-4">
+                    <div class="card h-100 @(ativo ? "border-primary border-2 shadow-sm" : "border")"
+                         style="cursor:pointer; transition:.15s"
+                         @onclick="() => _fluxo = opcao.Tipo">
+                        <div class="card-body text-center p-3">
+                            <div class="fs-1 mb-2">@opcao.Icone</div>
+                            <h6 class="card-title">@opcao.Titulo</h6>
+                            <p class="card-text text-muted small mb-2">@opcao.Descricao</p>
+                            <span class="badge @(ativo ? "bg-primary" : "bg-light text-muted border")">
+                                @(ativo ? "✓ Selecionado" : "Selecionar")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-outline-secondary" @onclick="OnVoltar">← Voltar</button>
+            <button class="btn btn-primary flex-grow-1"
+                    @onclick="Confirmar"
+                    disabled="@(_fluxo == null)">
+                Confirmar e Executar →
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<ContratoDto> ContratosSelecionados { get; set; } = [];
+    [Parameter] public EventCallback<TipoFluxo> OnFluxoSelected { get; set; }
+    [Parameter] public EventCallback OnVoltar { get; set; }
+
+    private TipoFluxo? _fluxo;
+
+    private static readonly (TipoFluxo Tipo, string Icone, string Titulo, string Descricao)[] _opcoes =
+    [
+        (TipoFluxo.PagamentoVista,   "💰", "Pagamento à Vista",
+            "Quite tudo com 20% de desconto sobre o valor total"),
+        (TipoFluxo.Renegociacao,     "🔄", "Renegociação",
+            "Novo plano em 36 parcelas com menor valor mensal"),
+        (TipoFluxo.PagamentoParcial, "📋", "Pagamento Parcial",
+            "Pague 30% agora e reduza seu saldo devedor"),
+    ];
+
+    private async Task Confirmar()
+    {
+        if (_fluxo.HasValue)
+            await OnFluxoSelected.InvokeAsync(_fluxo.Value);
+    }
+}

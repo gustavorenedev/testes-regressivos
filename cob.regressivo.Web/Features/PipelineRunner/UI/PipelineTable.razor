@@ -1,0 +1,52 @@
+@using Cob.Regressivo.Web.Features.PipelineRunner.Application.CarregarPipelines
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Pipelines Disponíveis</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Tags</th>
+                    <th class="text-center">Steps</th>
+                    <th>Descrição</th>
+                    <th>Arquivo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Pipelines)
+                {
+                    <tr>
+                        <td><code class="text-primary">@entry.Pipeline.Id</code></td>
+                        <td class="fw-semibold">@entry.Pipeline.Name</td>
+                        <td>
+                            @foreach (var tag in entry.Pipeline.Tags)
+                            {
+                                <span class="badge bg-secondary me-1">@tag</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info text-dark">@entry.Pipeline.Steps.Count</span>
+                        </td>
+                        <td class="text-muted small">@entry.Pipeline.Description</td>
+                        <td class="text-muted small"><code>@entry.SourceFile</code></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" @onclick="() => OnExecutar.InvokeAsync(entry)">
+                                ▶ Executar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<PipelineEntry> Pipelines { get; set; } = [];
+    [Parameter] public EventCallback<PipelineEntry> OnExecutar { get; set; }
+}

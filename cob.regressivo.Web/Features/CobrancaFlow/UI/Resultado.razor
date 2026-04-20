@@ -1,0 +1,101 @@
+@using Cob.Regressivo.Core.Reporting
+@using Cob.Regressivo.Web.Features.CobrancaFlow.Application.GerarRelatorio
+@inject CobrancaFlowState State
+@inject IJSRuntime JS
+
+<div class="card shadow-sm">
+    <div class="card-header @(ResultadoFluxo.Sucesso ? "bg-success" : "bg-danger") text-white">
+        <h5 class="mb-0">
+            @(ResultadoFluxo.Sucesso ? "✓ Operação Realizada com Sucesso" : "✗ Falha na Operação")
+        </h5>
+    </div>
+    <div class="card-body">
+
+        <div class="mb-3">
+            <span class="badge @BadgeClass() mb-2 px-3 py-2 fs-6">@TipoLabel()</span>
+            <p class="fs-5 mt-2">@ResultadoFluxo.Mensagem</p>
+        </div>
+
+        @if (ResultadoFluxo.Detalhes != null)
+        {
+            <div class="card bg-light border-0 mb-3">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Detalhes da Operação</h6>
+                    <pre class="mb-0" style="white-space:pre-wrap; font-family:inherit; font-size:.9rem">@ResultadoFluxo.Detalhes</pre>
+                </div>
+            </div>
+        }
+
+        @if (ResultadoFluxo.ValorAcordado.HasValue)
+        {
+            <div class="alert alert-primary">
+                Valor acordado: <strong>@ResultadoFluxo.ValorAcordado.Value.ToString("C")</strong>
+            </div>
+        }
+
+        <div class="d-grid gap-2 mt-3">
+            <button class="btn btn-primary btn-lg" @onclick="BaixarPdf" disabled="@_gerando">
+                @if (_gerando)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <span>Gerando PDF...</span>
+                }
+                else
+                {
+                    <span>⬇ Baixar Relatório PDF</span>
+                }
+            </button>
+            <button class="btn btn-outline-secondary btn-lg" @onclick="OnReiniciar">
+                ↩ Nova Consulta
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ResultadoFluxoDto ResultadoFluxo { get; set; } = null!;
+    [Parameter, EditorRequired] public TipoFluxo TipoFluxo { get; set; }
+    [Parameter] public EventCallback OnReiniciar { get; set; }
+
+    private bool _gerando;
+
+    private async Task BaixarPdf()
+    {
+        _gerando = true;
+        try
+        {
+            var pipeline  = CobrancaFlowPipelineBuilder.Build(
+                State.Cpf ?? "",
+                State.CorrelationId,
+                State.Contratos,
+                State.ContratosSelecionados,
+                TipoFluxo,
+                ResultadoFluxo);
+
+            var bytes    = PdfReportGenerator.Generate(pipeline.Records, pipeline.Config);
+            var base64   = Convert.ToBase64String(bytes);
+            var filename = $"relatorio-cobranca-{DateTime.Now:yyyyMMdd-HHmmss}.pdf";
+            await JS.InvokeVoidAsync("downloadFile", filename, "application/pdf", base64);
+        }
+        finally
+        {
+            _gerando = false;
+        }
+    }
+
+    private string BadgeClass() => TipoFluxo switch
+    {
+        TipoFluxo.PagamentoVista   => "bg-success",
+        TipoFluxo.Renegociacao     => "bg-warning text-dark",
+        TipoFluxo.PagamentoParcial => "bg-info text-dark",
+        _                          => "bg-secondary"
+    };
+
+    private string TipoLabel() => TipoFluxo switch
+    {
+        TipoFluxo.PagamentoVista   => "💰 Pagamento à Vista",
+        TipoFluxo.Renegociacao     => "🔄 Renegociação",
+        TipoFluxo.PagamentoParcial => "📋 Pagamento Parcial",
+        _                          => "Fluxo"
+    };
+}

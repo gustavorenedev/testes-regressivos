@@ -1,0 +1,95 @@
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Contratos Encontrados</h5>
+        <span class="badge bg-light text-primary fs-6">@Contratos.Count contrato(s)</span>
+    </div>
+    <div class="card-body">
+
+        @if (Contratos.Count == 0)
+        {
+            <div class="text-center py-4">
+                <p class="text-muted">Nenhum contrato encontrado para este CPF.</p>
+                <button class="btn btn-outline-secondary" @onclick="OnVoltar">← Voltar</button>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted mb-3">Selecione um ou mais contratos para negociar:</p>
+
+            @foreach (var contrato in Contratos)
+            {
+                var selecionado = _selecionados.Contains(contrato.Id);
+                <div class="card mb-2 border @(selecionado ? "border-primary border-2" : "")"
+                     style="cursor:pointer" @onclick="() => Toggle(contrato)">
+                    <div class="card-body py-2 px-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="checkbox" class="form-check-input flex-shrink-0"
+                                   checked="@selecionado"
+                                   @onclick:stopPropagation="true"
+                                   @onchange="() => Toggle(contrato)" />
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <span class="fw-semibold">@contrato.Descricao</span>
+                                    <span class="fw-bold text-primary ms-2 text-nowrap">@contrato.ValorTotal.ToString("C")</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2 small text-muted mt-1">
+                                    <span>@contrato.NumeroParcelas× @contrato.ValorParcela.ToString("C")</span>
+                                    <span>•</span>
+                                    <span>Venc: @contrato.DataVencimento.ToString("dd/MM/yyyy")</span>
+                                    <span>•</span>
+                                    <span class="@StatusClass(contrato.Status)">@contrato.Status</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (_selecionados.Count > 0)
+            {
+                var totalSelecionado = Contratos.Where(c => _selecionados.Contains(c.Id)).Sum(c => c.ValorTotal);
+                <div class="alert alert-primary py-2 mt-3 mb-0">
+                    <strong>@_selecionados.Count</strong> contrato(s) selecionado(s) —
+                    Total: <strong>@totalSelecionado.ToString("C")</strong>
+                </div>
+            }
+
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-outline-secondary" @onclick="OnVoltar">← Voltar</button>
+                <button class="btn btn-primary flex-grow-1"
+                        @onclick="Confirmar"
+                        disabled="@(_selecionados.Count == 0)">
+                    Continuar com @_selecionados.Count selecionado(s) →
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<ContratoDto> Contratos { get; set; } = [];
+    [Parameter] public EventCallback<List<ContratoDto>> OnSelectionConfirmed { get; set; }
+    [Parameter] public EventCallback OnVoltar { get; set; }
+
+    private readonly HashSet<string> _selecionados = [];
+
+    private void Toggle(ContratoDto c)
+    {
+        if (!_selecionados.Remove(c.Id))
+            _selecionados.Add(c.Id);
+    }
+
+    private async Task Confirmar()
+    {
+        var lista = Contratos.Where(c => _selecionados.Contains(c.Id)).ToList();
+        await OnSelectionConfirmed.InvokeAsync(lista);
+    }
+
+    private static string StatusClass(string status) => status switch
+    {
+        "EmAtraso" => "text-warning fw-semibold",
+        "Vencido"  => "text-danger fw-semibold",
+        "Quitado"  => "text-success",
+        _          => "text-muted"
+    };
+}

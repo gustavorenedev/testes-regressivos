@@ -1,0 +1,32 @@
+<div class="card shadow-sm">
+    <div class="card-header d-flex align-items-center gap-2">
+        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+        <span class="fw-semibold">Executando: @PipelineName</span>
+    </div>
+    <div class="card-body p-0">
+        <div id="log-container" style="background:#1e1e1e; color:#d4d4d4; font-family:monospace; font-size:13px; max-height:500px; overflow-y:auto; padding:16px;">
+            @foreach (var line in LogLines)
+            {
+                <div class="@LineClass(line)">@line</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string PipelineName { get; set; } = "";
+    [Parameter, EditorRequired] public List<string> LogLines { get; set; } = [];
+
+    private static string LineClass(string line)
+    {
+        if (line.Contains("✓"))         return "text-success";
+        if (line.Contains("✗") ||
+            line.Contains("Erro") ||
+            line.Contains("interrompido")) return "text-danger";
+        if (line.StartsWith("→"))       return "text-warning fw-bold";
+        if (line.StartsWith("  Extraído") ||
+            line.StartsWith("  Ignorado") ||
+            line.StartsWith("CorrelationId")) return "text-secondary";
+        return "";
+    }
+}

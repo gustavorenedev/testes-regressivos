@@ -1,0 +1,175 @@
+@using Cob.Regressivo.Core.Configuration
+@using Cob.Regressivo.Core.Engine
+
+@{
+    var passed = Records.Count(r => r.Success);
+    var total  = Records.Count;
+    var allOk  = passed == total;
+    var noneOk = passed == 0;
+    var badgeClass = allOk ? "bg-success" : noneOk ? "bg-danger" : "bg-warning text-dark";
+    var headerClass = allOk ? "bg-success" : noneOk ? "bg-danger" : "bg-warning text-dark";
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header @headerClass text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            @(allOk ? "✓" : noneOk ? "✗" : "⚠") Execução Concluída — @passed/@total steps OK
+        </h5>
+        <span class="badge bg-light text-dark font-monospace">@CorrelationId</span>
+    </div>
+
+    <div class="card-body">
+        <!-- Summary table -->
+        <h6 class="mb-3 fw-bold">Resumo da Execução</h6>
+        <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Step</th>
+                        <th>URL</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Duração</th>
+                        <th class="text-center">Resultado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Records)
+                    {
+                        <tr class="@(r.Success ? "" : "table-danger")">
+                            <td class="small">@r.StepName</td>
+                            <td class="small font-monospace text-truncate" style="max-width:280px" title="@r.RequestUrl">@r.RequestUrl</td>
+                            <td class="text-center">
+                                <span class="badge @(r.ResponseStatusCode is >= 200 and < 300 ? "bg-success" : "bg-danger")">
+                                    @r.ResponseStatusCode
+                                </span>
+                            </td>
+                            <td class="text-center small">@($"{r.Duration.TotalMilliseconds:F0}ms")</td>
+                            <td class="text-center fw-bold @(r.Success ? "text-success" : "text-danger")">
+                                @(r.Success ? "OK" : "FALHA")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Step details (accordion) -->
+        <h6 class="mb-3 fw-bold">Detalhes por Step</h6>
+        <div class="accordion mb-4" id="stepsAccordion">
+            @for (int i = 0; i < Records.Count; i++)
+            {
+                var record = Records[i];
+                var idx    = i;
+                var collapseId = $"collapse{idx}";
+                var headerId   = $"heading{idx}";
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="@headerId">
+                        <button class="accordion-button @(idx > 0 ? "collapsed" : "")" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#@collapseId">
+                            <span class="me-2 @(record.Success ? "text-success" : "text-danger")">
+                                @(record.Success ? "✓" : "✗")
+                            </span>
+                            <strong>@record.StepName</strong>
+                            <span class="ms-2 text-muted small">(@record.StepId)</span>
+                            <span class="ms-auto me-3 badge @(record.ResponseStatusCode is >= 200 and < 300 ? "bg-success" : "bg-danger")">
+                                @record.ResponseStatusCode
+                            </span>
+                        </button>
+                    </h2>
+                    <div id="@collapseId" class="accordion-collapse collapse @(idx == 0 ? "show" : "")"
+                         data-bs-parent="#stepsAccordion">
+                        <div class="accordion-body p-3">
+
+                            <div class="text-muted small mb-3">
+                                @record.Timestamp.ToString("HH:mm:ss.fff")  |  Correlation: @record.CorrelationId  |  @($"{record.Duration.TotalMilliseconds:F0}ms")
+                            </div>
+
+                            <!-- REQUEST -->
+                            <p class="fw-bold text-primary mb-1">REQUEST</p>
+                            <div class="border rounded p-2 mb-3" style="background:#f8f9fa; font-family:monospace; font-size:12px;">
+                                <div class="fw-bold">@record.RequestMethod  @record.RequestUrl</div>
+                                @if (record.RequestHeaders.Count > 0)
+                                {
+                                    <div class="mt-2 text-muted">Headers:</div>
+                                    @foreach (var h in record.RequestHeaders)
+                                    {
+                                        <div>@h.Key: @h.Value</div>
+                                    }
+                                }
+                                @if (record.RequestBody != null)
+                                {
+                                    <div class="mt-2 text-muted">Body:</div>
+                                    <pre class="mb-0" style="font-size:11px; white-space:pre-wrap">@record.RequestBody</pre>
+                                }
+                            </div>
+
+                            <!-- RESPONSE -->
+                            <p class="fw-bold @(record.Success ? "text-success" : "text-danger") mb-1">RESPONSE</p>
+                            <div class="border rounded p-2 mb-3" style="background:#f8f9fa; font-family:monospace; font-size:12px;">
+                                <div class="fw-bold @(record.Success ? "text-success" : "text-danger")">
+                                    Status: @record.ResponseStatusCode
+                                </div>
+                                @if (record.ResponseBody != null)
+                                {
+                                    <div class="mt-2 text-muted">Body:</div>
+                                    <pre class="mb-0" style="font-size:11px; white-space:pre-wrap; max-height:300px; overflow-y:auto">@record.ResponseBody</pre>
+                                }
+                            </div>
+
+                            <!-- ASSERTIONS -->
+                            @if (record.Assertions.Count > 0)
+                            {
+                                <p class="fw-bold mb-2">ASSERTIONS</p>
+                                @foreach (var a in record.Assertions)
+                                {
+                                    <div class="d-flex gap-2 mb-1 small">
+                                        <span class="fw-bold @(a.Passed ? "text-success" : "text-danger")">
+                                            @(a.Passed ? "✓" : "✗")
+                                        </span>
+                                        <span>@a.Message</span>
+                                    </div>
+                                }
+                            }
+
+                            @if (!record.Success && record.ErrorMessage != null)
+                            {
+                                <div class="alert alert-danger mt-2 mb-0 py-2 small">
+                                    <strong>Erro:</strong> @record.ErrorMessage
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-3">
+            <button class="btn btn-primary" @onclick="OnBaixarPdf" disabled="@Baixando">
+                @if (Baixando)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span>Gerando PDF...</span>
+                }
+                else
+                {
+                    <span>⬇ Baixar PDF</span>
+                }
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="OnVoltar">
+                ↩ Voltar aos Pipelines
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<ExecutionRecord> Records { get; set; } = [];
+    [Parameter, EditorRequired] public PipelineConfig Pipeline { get; set; } = null!;
+    [Parameter, EditorRequired] public string CorrelationId { get; set; } = "";
+    [Parameter] public EventCallback OnVoltar { get; set; }
+    [Parameter] public EventCallback OnBaixarPdf { get; set; }
+    [Parameter] public bool Baixando { get; set; }
+}
