@@ -6,8 +6,7 @@ namespace Cob.Regressivo.CLI.Assertions;
 
 public static class AssertionEvaluator
 {
-    public static List<AssertionResult> Evaluate(
-        int statusCode, string responseBody, List<AssertionConfig> assertions)
+    public static List<AssertionResult> Evaluate(int statusCode, string responseBody, List<AssertionConfig> assertions)
     {
         var results = new List<AssertionResult>();
         JToken? root = null;
@@ -20,8 +19,7 @@ public static class AssertionEvaluator
             if (a.StatusCode.HasValue)
             {
                 var ok = statusCode == a.StatusCode.Value;
-                results.Add(new AssertionResult(ok,
-                    $"StatusCode {statusCode} {(ok ? "==" : "!=")} {a.StatusCode.Value}"));
+                results.Add(new AssertionResult(ok, $"StatusCode {statusCode} {(ok ? "==" : "!=")} {a.StatusCode.Value}"));
                 continue;
             }
 
@@ -32,14 +30,10 @@ public static class AssertionEvaluator
 
                 var (passed, msg) = a.Operator switch
                 {
-                    "notEmpty"  => (!string.IsNullOrEmpty(val),
-                                   $"{a.Path} é {(string.IsNullOrEmpty(val) ? "vazio" : "não-vazio")}"),
-                    "equals"    => (val == a.Value,
-                                   $"{a.Path} [{val}] {(val == a.Value ? "==" : "!=")} [{a.Value}]"),
-                    "contains"  => (val?.Contains(a.Value ?? "") == true,
-                                   $"{a.Path} {(val?.Contains(a.Value ?? "") == true ? "contém" : "não contém")} [{a.Value}]"),
-                    "notNull"   => (token != null && token.Type != JTokenType.Null,
-                                   $"{a.Path} é {(token == null ? "null" : "não-null")}"),
+                    "notEmpty"  => (!string.IsNullOrEmpty(val), $"{a.Path} é {(string.IsNullOrEmpty(val) ? "vazio" : "não-vazio")}"),
+                    "equals"    => (val == a.Value, $"{a.Path} [{val}] {(val == a.Value ? "==" : "!=")} [{a.Value}]"),
+                    "contains"  => (val?.Contains(a.Value ?? "") == true, $"{a.Path} {(val?.Contains(a.Value ?? "") == true ? "contém" : "não contém")} [{a.Value}]"),
+                    "notNull"   => (token != null && token.Type != JTokenType.Null, $"{a.Path} é {(token == null ? "null" : "não-null")}"),
                     _           => (false, $"Operador desconhecido: {a.Operator}")
                 };
 

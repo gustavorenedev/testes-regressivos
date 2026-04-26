@@ -14,16 +14,13 @@ if (!Directory.Exists(pipelinesDir))
 }
 
 var allPipelines = new List<PipelineConfig>();
-
-// Cada pipeline ID aponta para o PipelineFileConfig do seu arquivo de origem.
-// Isso garante que globals e variables corretos sejam usados independente da ordem de carga.
 var configByPipelineId = new Dictionary<string, PipelineFileConfig>();
 
 foreach (var file in Directory.GetFiles(pipelinesDir, "*.json", SearchOption.TopDirectoryOnly))
 {
     try
     {
-        var json = await File.ReadAllTextAsync(file);
+        var json       = await File.ReadAllTextAsync(file);
         var fileConfig = JsonConvert.DeserializeObject<PipelineFileConfig>(json);
         if (fileConfig?.Pipelines == null || fileConfig.Pipelines.Count == 0) continue;
 
@@ -45,29 +42,26 @@ if (allPipelines.Count == 0)
     return 1;
 }
 
-var selected = PipelineSelector.Show(allPipelines);
+var selected           = PipelineSelector.Show(allPipelines);
+var selectedFileConfig = configByPipelineId[selected.Id];
 
 AnsiConsole.WriteLine();
 AnsiConsole.MarkupLine($"[bold]Executando:[/] [cyan]{Markup.Escape(selected.Name)}[/]");
 AnsiConsole.WriteLine();
 
-// Usa o PipelineFileConfig do arquivo de origem do pipeline selecionado
-var selectedFileConfig = configByPipelineId[selected.Id];
 var orchestrator = new PipelineOrchestrator(selectedFileConfig);
-var (records, correlationId) = await orchestrator.ExecuteAsync(selected);
+var summary      = await orchestrator.ExecuteAsync(selected);
 
-var passed = records.Count(r => r.Success);
-var color  = passed == records.Count ? "green" : passed == 0 ? "red" : "yellow";
-
+var statusColor = summary.FailedSteps == 0 ? "green" : summary.PassedSteps == 0 ? "red" : "yellow";
 AnsiConsole.WriteLine();
-AnsiConsole.MarkupLine($"[bold]Resultado:[/] [{color}]{passed}/{records.Count}[/] steps com sucesso");
+AnsiConsole.MarkupLine($"[bold]Resultado:[/] [{statusColor}]{summary.PassedSteps}/{summary.TotalSteps}[/] steps com sucesso");
+AnsiConsole.MarkupLine($"[bold]Duração total:[/] [cyan]{summary.TotalDuration.TotalMilliseconds:F0}ms[/]");
 
-var rawPath = (selected.Report?.OutputPath ?? @"C:\Users\reneg\pdf\report-{{correlationId}}.pdf")
-    .Replace("{{$correlationId}}", correlationId)
-    .Replace("{{correlationId}}", correlationId)
-    .Replace("{{$timestamp}}", DateTime.Now.ToString("yyyyMMddHHmmss"));
+var rawPath = (summary.Report.OutputPath)
+    .Replace("{{$correlationId}}", summary.CorrelationId)
+    .Replace("{{correlationId}}",  summary.CorrelationId)
+    .Replace("{{$timestamp}}",     summary.StartedAt.ToString("yyyyMMddHHmmss"));
 
-// Resolve sempre relativo ao diretório do executável
 var outputPath = Path.IsPathRooted(rawPath)
     ? rawPath
     : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, rawPath));
@@ -78,7 +72,7 @@ AnsiConsole.MarkupLine($"[yellow]{Markup.Escape(outputPath)}[/]");
 
 try
 {
-    PdfReportGenerator.Generate(records, selected, outputPath);
+    PdfReportGenerator.Generate(summary, outputPath);
     AnsiConsole.MarkupLine($"[green]✓ Relatório gerado com sucesso![/]");
 }
 catch (Exception ex)

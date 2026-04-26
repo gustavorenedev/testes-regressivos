@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Cob.Regressivo.CLI.Assertions;
 using Cob.Regressivo.CLI.Configuration;
 using Cob.Regressivo.CLI.Extraction;
@@ -13,11 +14,13 @@ public class PipelineOrchestrator
     public PipelineOrchestrator(PipelineFileConfig fileConfig)
         => _fileConfig = fileConfig;
 
-    public async Task<(List<ExecutionRecord> Records, string CorrelationId)> ExecuteAsync(PipelineConfig pipeline)
+    public async Task<PipelineRunSummary> ExecuteAsync(PipelineConfig pipeline)
     {
+        var pipelineSw  = Stopwatch.StartNew();
+        var startedAt   = DateTime.UtcNow;
         var correlationId = Guid.NewGuid().ToString("N")[..12].ToUpper();
-        var context = new PipelineExecutionContext(correlationId, _fileConfig.Variables, _fileConfig.Globals);
-        var records = new List<ExecutionRecord>();
+        var context     = new PipelineExecutionContext(correlationId, _fileConfig.Variables, _fileConfig.Globals);
+        var records     = new List<ExecutionRecord>();
         var failedSteps = new HashSet<string>();
 
         AnsiConsole.MarkupLine($"[grey]CorrelationId:[/] [cyan]{correlationId}[/]");
@@ -28,7 +31,6 @@ public class PipelineOrchestrator
         {
             AnsiConsole.MarkupLine($"\n[bold]→[/] [yellow]{Markup.Escape(step.Name)}[/] [grey]({step.Id})[/]");
 
-            // Pula step se alguma dependência falhou
             var failedDep = step.DependsOn.FirstOrDefault(d => failedSteps.Contains(d));
             if (failedDep != null)
             {
@@ -46,7 +48,6 @@ public class PipelineOrchestrator
                 continue;
             }
 
-            // Tenta montar o request (template pode falhar se variável não resolvida)
             BuiltRequest request;
             try
             {
@@ -71,12 +72,10 @@ public class PipelineOrchestrator
 
             var retryConfig = step.RetryPolicy ?? _fileConfig.Globals.RetryPolicy;
 
-            var result = await AnsiConsole.Status()
-                .Spinner(Spinner.Known.Dots)
-                .StartAsync($"  {request.Method} {Markup.Escape(request.Url)}...", _ =>
-                    StepExecutor.ExecuteAsync(request, retryConfig, _fileConfig.Globals.TimeoutSeconds));
+            var result = await AnsiConsole.Status().Spinner(Spinner.Known.Dots)
+                                                   .StartAsync($"  {request.Method} {Markup.Escape(request.Url)}...", _ =>
+                                                    StepExecutor.ExecuteAsync(request, retryConfig, _fileConfig.Globals.TimeoutSeconds));
 
-            // Exibe erro de rede/conexão quando status = 0
             if (result.StatusCode == 0 && result.ErrorMessage != null)
                 AnsiConsole.MarkupLine($"  [red]Erro:[/] {Markup.Escape(result.ErrorMessage)}");
 
@@ -127,6 +126,17 @@ public class PipelineOrchestrator
             }
         }
 
-        return (records, correlationId);
+        pipelineSw.Stop();
+
+        return new PipelineRunSummary(
+            PipelineId:          pipeline.Id,
+            PipelineName:        pipeline.Name,
+            PipelineDescription: pipeline.Description,
+            Tags:                pipeline.Tags,
+            CorrelationId:       correlationId,
+            StartedAt:           startedAt,
+            TotalDuration:       pipelineSw.Elapsed,
+            Records:             records,
+            Report:              pipeline.Report);
     }
 }

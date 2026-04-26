@@ -1,0 +1,180 @@
+﻿{
+  "version": "1.1",
+  "globals": {
+    "baseUrl": "http://localhost:5142",
+    "timeoutSeconds": 30,
+    "defaultHeaders": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "X-Correlation-ID": "{{correlationId}}"
+    },
+    "retryPolicy": {
+      "maxAttempts": 3,
+      "backoffSeconds": [ 1, 2, 5 ],
+      "retryOnStatusCodes": [ 429, 500, 502, 503 ]
+    }
+  },
+  "variables": {
+    "cpf": "12345678900",
+    "dataVencimento": "2025-05-10",
+    "valorEntrada": 300.00,
+    "quantidadeParcelas": 10
+  },
+  "pipelines": [
+    {
+      "id": "renegociacao_divida",
+      "name": "Pipeline de Renegociação de Dívida",
+      "description": "Fluxo completo: lista contratos em atraso → gera ofertas → simula parcelamento → cadastra proposta",
+      "tags": [ "renegociacao", "collection", "recovery" ],
+      "onError": "stop",
+      "steps": [
+        {
+          "id": "listar_contratos",
+          "name": "Listar Contratos em Atraso",
+          "dependsOn": [],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/listarContratos",
+            "method": "GET",
+            "headers": {},
+            "queryParams": {
+              "cpf": "{{variables.cpf}}"
+            }
+          },
+          "extract": {
+            "nomeCliente":    "$.nome",
+            "numeroContrato": "$.contratos[0].numeroContrato",
+            "core":           "$.contratos[0].core",
+            "diasAtraso":     "$.contratos[0].diasAtraso",
+            "saldoAtraso":    "$.contratos[0].saldoAtraso"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.cpf",        "operator": "notEmpty" },
+            { "path": "$.contratos",  "operator": "notEmpty" }
+          ]
+        },
+        {
+          "id": "listar_ofertas",
+          "name": "Listar Ofertas do Contrato",
+          "dependsOn": [ "listar_contratos" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/listarOfertas",
+            "method": "POST",
+            "headers": {},
+            "queryParams": {
+              "cpf": "{{variables.cpf}}"
+            },
+            "body": {
+              "core":            "{{steps.listar_contratos.core}}",
+              "numeroContrato":  "{{steps.listar_contratos.numeroContrato}}",
+              "dataVencimento":  "{{variables.dataVencimento}}"
+            }
+          },
+          "extract": {
+            "percentualDesconto":   "$.ofertas[0].percentualDesconto",
+            "valorComDesconto":     "$.ofertas[0].valorComDesconto",
+            "entradaMinima":        "$.ofertas[1].valorEntradaMinima",
+            "parcelaEstimada":      "$.ofertas[1].valorParcelaEstimado",
+            "taxaParcelado":        "$.ofertas[1].taxaJurosMensal",
+            "saldoRefinanciamento": "$.ofertas[2].saldoTotal",
+            "parcelaRefinanciamento": "$.ofertas[2].valorParcela"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.ofertas",           "operator": "notEmpty" },
+            { "path": "$.ofertas[0].tipo",   "operator": "equals", "value": "aVista" },
+            { "path": "$.ofertas[1].tipo",   "operator": "equals", "value": "parcelado" },
+            { "path": "$.ofertas[2].tipo",   "operator": "equals", "value": "refinanciamento" }
+          ]
+        },
+        {
+          "id": "listar_simulacao",
+          "name": "Simular Parcelamento",
+          "dependsOn": [ "listar_ofertas" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/listarSimulacao",
+            "method": "POST",
+            "headers": {},
+            "queryParams": {
+              "cpf": "{{variables.cpf}}"
+            },
+            "body": {
+              "valorEntrada":       "{{variables.valorEntrada}}",
+              "quantidadeParcelas": "{{variables.quantidadeParcelas}}",
+              "core":               "{{steps.listar_contratos.core}}",
+              "numeroContrato":     "{{steps.listar_contratos.numeroContrato}}",
+              "dataVencimento":     "{{variables.dataVencimento}}"
+            }
+          },
+          "extract": {
+            "valorParcela":           "$.simulacao.valorParcela",
+            "valorTotal":             "$.simulacao.valorTotal",
+            "taxaJurosMensal":        "$.simulacao.taxaJurosMensal",
+            "custoEfetivoTotal":      "$.simulacao.custoEfetivoTotal",
+            "dataPrimeiroVencimento": "$.simulacao.dataPrimeiroVencimento"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.simulacao.valorParcela",      "operator": "notEmpty" },
+            { "path": "$.simulacao.valorTotal",        "operator": "notEmpty" },
+            { "path": "$.simulacao.taxaJurosMensal",   "operator": "notEmpty" }
+          ]
+        },
+        {
+          "id": "cadastrar_proposta",
+          "name": "Cadastrar Proposta de Renegociação",
+          "dependsOn": [ "listar_simulacao" ],
+          "endpoint": {
+            "url": "{{globals.baseUrl}}/cadastrarProposta",
+            "method": "POST",
+            "headers": {},
+            "queryParams": {
+              "cpf": "{{variables.cpf}}"
+            },
+            "body": {
+              "valorEntrada":       "{{variables.valorEntrada}}",
+              "quantidadeParcelas": "{{variables.quantidadeParcelas}}",
+              "core":               "{{steps.listar_contratos.core}}",
+              "numeroContrato":     "{{steps.listar_contratos.numeroContrato}}",
+              "dataVencimento":     "{{variables.dataVencimento}}"
+            }
+          },
+          "extract": {
+            "numeroNovoContrato":  "$.numeroNovoContrato",
+            "dataPagamento":       "$.dataPagamento",
+            "valorParcelaFinal":   "$.valorParcelaASerPaga",
+            "statusProposta":      "$.status"
+          },
+          "assertions": [
+            { "statusCode": 200 },
+            { "path": "$.status",               "operator": "equals",   "value": "PROPOSTA_CRIADA" },
+            { "path": "$.numeroNovoContrato",   "operator": "notEmpty" },
+            { "path": "$.valorParcelaASerPaga", "operator": "notEmpty" }
+          ]
+        }
+      ],
+      "output": {
+        "nomeCliente":             "{{steps.listar_contratos.nomeCliente}}",
+        "contratoOriginal":        "{{steps.listar_contratos.numeroContrato}}",
+        "saldoAtraso":             "{{steps.listar_contratos.saldoAtraso}}",
+        "descontoAVista":          "{{steps.listar_ofertas.percentualDesconto}}%",
+        "valorComDesconto":        "{{steps.listar_ofertas.valorComDesconto}}",
+        "entradaMinima":           "{{steps.listar_ofertas.entradaMinima}}",
+        "valorParcelaSimulada":    "{{steps.listar_simulacao.valorParcela}}",
+        "valorTotalSimulado":      "{{steps.listar_simulacao.valorTotal}}",
+        "custoEfetivoTotal":       "{{steps.listar_simulacao.custoEfetivoTotal}}%",
+        "dataPrimeiroVencimento":  "{{steps.listar_simulacao.dataPrimeiroVencimento}}",
+        "numeroNovoContrato":      "{{steps.cadastrar_proposta.numeroNovoContrato}}",
+        "valorParcelaFinal":       "{{steps.cadastrar_proposta.valorParcelaFinal}}",
+        "statusFinal":             "{{steps.cadastrar_proposta.statusProposta}}"
+      },
+      "report": {
+        "title": "Relatório - Renegociação de Dívida",
+        "outputPath": "C:\\Users\\reneg\\pdf\\renegociacao-{{correlationId}}.pdf",
+        "includeRequestBody": true,
+        "includeResponseBody": true,
+        "sensitiveFields": [ "cpf" ]
+      }
+    }
+  ]
+}
