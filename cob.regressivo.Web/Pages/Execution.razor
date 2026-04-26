@@ -1,0 +1,125 @@
+@page "/execution"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject PipelineService PipelineService
+@inject ExecutionHistoryService History
+
+<PageTitle>@(_summary is not null ? _summary.PipelineName : "Executando...")</PageTitle>
+
+@if (_executing)
+{
+    <div class="execution-loading">
+        <div class="spinner spinner-lg"></div>
+        <h2>Executando pipeline...</h2>
+        <p class="text-secondary">@PipelineId</p>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="page-header">
+        <a href="/" class="back-link">← Voltar</a>
+        <h1 class="page-title">Erro na execução</h1>
+    </div>
+    <div class="alert alert-error">@_error</div>
+}
+else if (_summary is not null)
+{
+    <div class="page-header">
+        <a href="/" class="back-link">← Voltar</a>
+        <div class="execution-header-row">
+            <div>
+                <h1 class="page-title">@_summary.PipelineName</h1>
+                @if (!string.IsNullOrWhiteSpace(_summary.PipelineDescription))
+                {
+                    <p class="page-subtitle">@_summary.PipelineDescription</p>
+                }
+            </div>
+            <a href="/download/@_summary.CorrelationId" class="btn btn-primary" target="_blank">
+                ↓ Baixar Relatório PDF
+            </a>
+        </div>
+    </div>
+
+    <div class="summary-cards">
+        <div class="summary-card">
+            <span class="summary-label">Status geral</span>
+            <StatusBadge Status="@_summary.OverallStatus" />
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">Duração total</span>
+            <span class="summary-value">@_summary.TotalDuration.TotalMilliseconds.ToString("F0") ms</span>
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">Steps</span>
+            <span class="summary-value">
+                <span class="perf-ok">@_summary.PassedSteps</span>
+                <span class="text-muted"> / @_summary.TotalSteps</span>
+            </span>
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">Correlation ID</span>
+            <span class="summary-value summary-mono">@_summary.CorrelationId</span>
+        </div>
+    </div>
+
+    @if (_summary.Tags.Any())
+    {
+        <div class="tag-list" style="margin-bottom: 1.5rem;">
+            @foreach (var tag in _summary.Tags)
+            {
+                <span class="tag">@tag</span>
+            }
+        </div>
+    }
+
+    <ExecutionTable Records="@_summary.Records" />
+
+    @if (_pdfError is not null)
+    {
+        <div class="alert alert-error" style="margin-top:1rem">
+            PDF não gerado: @_pdfError
+        </div>
+    }
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? PipelineId { get; set; }
+
+    private PipelineRunSummary? _summary;
+    private bool _executing = true;
+    private string? _error;
+    private string? _pdfError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(PipelineId))
+        {
+            _error = "Nenhum pipeline especificado.";
+            _executing = false;
+            return;
+        }
+
+        try
+        {
+            _summary = await PipelineService.ExecuteAsync(PipelineId);
+
+            try
+            {
+                var pdfBytes = PipelineService.GeneratePdfBytes(_summary);
+                History.Store(_summary.CorrelationId, pdfBytes);
+            }
+            catch (Exception ex)
+            {
+                _pdfError = ex.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _executing = false;
+        }
+    }
+}

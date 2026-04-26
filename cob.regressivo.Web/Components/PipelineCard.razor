@@ -1,0 +1,33 @@
+<div class="pipeline-card">
+    <div class="pipeline-card-header">
+        <h3 class="pipeline-card-title">@Pipeline.Name</h3>
+        @if (Pipeline.Tags.Any())
+        {
+            <div class="tag-list">
+                @foreach (var tag in Pipeline.Tags)
+                {
+                    <span class="tag">@tag</span>
+                }
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Pipeline.Description))
+    {
+        <p class="pipeline-card-desc">@Pipeline.Description</p>
+    }
+
+    <div class="pipeline-card-footer">
+        <span class="pipeline-step-count">
+            @Pipeline.Steps.Count step@(Pipeline.Steps.Count != 1 ? "s" : "")
+        </span>
+        <button class="btn btn-primary" @onclick="() => OnExecute.InvokeAsync(Pipeline.Id)">
+            ▶ Executar
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public PipelineConfig Pipeline { get; set; } = default!;
+    [Parameter] public EventCallback<string> OnExecute { get; set; }
+}

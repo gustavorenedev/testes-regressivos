@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cob.regressivo.CLI", "cob.regressivo.CLI\cob.regressivo.CLI.csproj", "{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cob.regressivo.Web", "cob.regressivo.Web\cob.regressivo.Web.csproj", "{122AD2A4-4713-4E24-9602-981D9ED79B5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27966AB1-6F2B-48CC-B20D-A2F4D94DDC95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{122AD2A4-4713-4E24-9602-981D9ED79B5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{122AD2A4-4713-4E24-9602-981D9ED79B5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{122AD2A4-4713-4E24-9602-981D9ED79B5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{122AD2A4-4713-4E24-9602-981D9ED79B5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
