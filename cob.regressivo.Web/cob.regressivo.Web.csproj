@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Cob.Regressivo.Web</RootNamespace>
+    <AssemblyName>cob.regressivo.Web</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\cob.regressivo.CLI\cob.regressivo.CLI.csproj" />
+  </ItemGroup>
+
+  <!-- Link pipeline JSON files from CLI project -->
+  <ItemGroup>
+    <None Include="..\cob.regressivo.CLI\pipelines\*.json">
+      <Link>pipelines\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Link logo assets from CLI project -->
+  <ItemGroup>
+    <None Include="..\cob.regressivo.CLI\assets\**\*">
+      <Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

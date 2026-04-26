@@ -1,0 +1,52 @@
+@page "/"
+@rendermode @(new InteractiveServerRenderMode())
+@inject PipelineService PipelineService
+@inject NavigationManager Nav
+
+<PageTitle>Pipeline Orchestrator</PageTitle>
+
+<div class="page-header">
+    <h1 class="page-title">Pipelines disponíveis</h1>
+    <p class="page-subtitle">Selecione um pipeline para executar</p>
+</div>
+
+@if (_error is not null)
+{
+    <div class="alert alert-error">@_error</div>
+}
+else if (!_pipelines.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon">📂</div>
+        <p>Nenhum pipeline encontrado em <code>pipelines/</code>.</p>
+    </div>
+}
+else
+{
+    <div class="pipeline-grid">
+        @foreach (var (pipeline, _) in _pipelines)
+        {
+            <PipelineCard Pipeline="pipeline" OnExecute="Run" />
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<(PipelineConfig Pipeline, PipelineFileConfig FileConfig)> _pipelines = [];
+    private string? _error;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            _pipelines = PipelineService.GetAllPipelines();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private void Run(string pipelineId)
+        => Nav.NavigateTo($"/execution?pipelineId={Uri.EscapeDataString(pipelineId)}");
+}

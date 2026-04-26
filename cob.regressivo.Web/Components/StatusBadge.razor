@@ -1,0 +1,13 @@
+<span class="badge @GetClass(Status)">@Status</span>
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = "";
+
+    private static string GetClass(string s) => s switch
+    {
+        "SUCESSO" => "badge-success",
+        "FALHA"   => "badge-fail",
+        "FALHA PARCIAL" => "badge-partial",
+        _ => "badge-neutral"
+    };
+}

@@ -1,0 +1,111 @@
+<div class="table-container">
+    <table class="execution-table">
+        <thead>
+            <tr>
+                <th>Step</th>
+                <th>Status</th>
+                <th>HTTP</th>
+                <th>Duração</th>
+                <th>Assertions / Erro</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Records)
+            {
+                <tr class="@(r.Success ? "" : "row-failed")">
+                    <td>
+                        <div class="step-name">@r.StepName</div>
+                        <div class="step-id">@r.StepId</div>
+                        @if (!string.IsNullOrEmpty(r.RequestUrl))
+                        {
+                            <div class="step-url">@r.RequestMethod @r.RequestUrl</div>
+                        }
+                    </td>
+                    <td>
+                        <StatusBadge Status="@(r.Success ? "SUCESSO" : "FALHA")" />
+                    </td>
+                    <td>
+                        @if (r.ResponseStatusCode > 0)
+                        {
+                            <span class="http-status @HttpClass(r.ResponseStatusCode)">@r.ResponseStatusCode</span>
+                        }
+                        else
+                        {
+                            <span class="http-none">—</span>
+                        }
+                    </td>
+                    <td>
+                        @if (r.Duration == TimeSpan.Zero)
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                        else
+                        {
+                            <span class="duration @PerfClass(r.Duration)">
+                                @DurationLabel(r.Duration)
+                            </span>
+                            <div class="perf-bar-track">
+                                <div class="perf-bar @PerfClass(r.Duration)" style="@BarStyle(r.Duration)"></div>
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @if (r.Assertions.Any())
+                        {
+                            <div class="assertion-list">
+                                @foreach (var a in r.Assertions)
+                                {
+                                    <div class="assertion @(a.Passed ? "assertion-pass" : "assertion-fail")">
+                                        @(a.Passed ? "✓" : "✗") @a.Message
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(r.ErrorMessage))
+                        {
+                            <span class="error-msg">@r.ErrorMessage</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ExecutionRecord> Records { get; set; } = [];
+
+    private static string PerfClass(TimeSpan d) => d.TotalMilliseconds switch
+    {
+        <= 0   => "",
+        < 1000 => "perf-ok",
+        < 3000 => "perf-warn",
+        _      => "perf-critical"
+    };
+
+    private static string DurationLabel(TimeSpan d)
+    {
+        var ms = d.TotalMilliseconds;
+        if (ms < 1000) return $"{ms:F0}ms";
+        if (ms < 3000) return $"{ms:F0}ms !";
+        return $"{ms:F0}ms ⚠";
+    }
+
+    private static string BarStyle(TimeSpan d)
+    {
+        var pct = Math.Min(d.TotalMilliseconds / 50.0, 100.0);
+        return $"width:{pct:F0}%";
+    }
+
+    private static string HttpClass(int code) => code switch
+    {
+        >= 200 and < 300 => "http-ok",
+        >= 400 and < 500 => "http-client-error",
+        >= 500           => "http-server-error",
+        _                => ""
+    };
+}
